@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,7 @@ import {
   Settings
 } from "lucide-react";
 import DigitalAvatar from "@/components/DigitalAvatar";
+import DigitalAvatarChat from "@/components/DigitalAvatarChat";
 import MeetingCreator from "@/components/MeetingCreator";
 import MeetingDashboard from "@/components/MeetingDashboard";
 import MaterialManager from "@/components/MaterialManager";
@@ -144,7 +144,7 @@ const Index = () => {
               </Card>
             </div>
 
-            {/* Recent Activities */}
+            {/* Recent Activities and Chat */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="digital-card">
                 <CardHeader>
@@ -178,25 +178,29 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="digital-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-purple-500" />
-                    AI助手建议
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <p className="font-medium text-blue-900">优化建议</p>
-                    <p className="text-sm text-blue-700">建议将明天的3个会议合并为1个综合会议，可节省2小时时间</p>
-                  </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <p className="font-medium text-green-900">效率提醒</p>
-                    <p className="text-sm text-green-700">本周会议材料准备效率比上周提升35%</p>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* 数字分身对话界面 */}
+              <DigitalAvatarChat />
             </div>
+
+            {/* AI助手建议卡片 */}
+            <Card className="digital-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-500" />
+                  AI助手建议
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <p className="font-medium text-blue-900">优化建议</p>
+                  <p className="text-sm text-blue-700">建议将明天的3个会议合并为1个综合会议，可节省2小时时间</p>
+                </div>
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <p className="font-medium text-green-900">效率提醒</p>
+                  <p className="text-sm text-green-700">本周会议材料准备效率比上周提升35%</p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="create">
