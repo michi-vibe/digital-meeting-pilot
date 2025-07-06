@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,8 +16,12 @@ import {
   Sparkles,
   TrendingUp,
   MessageSquare,
-  Settings
+  Settings,
+  LogOut,
+  User
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import DigitalAvatar from "@/components/DigitalAvatar";
 import DigitalAvatarChat from "@/components/DigitalAvatarChat";
 import MeetingCreator from "@/components/MeetingCreator";
@@ -27,6 +31,35 @@ import SystemStats from "@/components/SystemStats";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  // 如果未登录，重定向到认证页面
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
+  // 如果正在加载或未登录，显示加载状态
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <Bot className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">正在加载...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -51,6 +84,26 @@ const Index = () => {
                 <div className="status-indicator bg-green-500"></div>
                 <span className="text-sm text-green-700 font-medium">AI助手在线</span>
               </div>
+              
+              {/* 用户信息 */}
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 bg-blue-50 px-3 py-2 rounded-lg">
+                  <User className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm text-blue-700 font-medium">
+                    {user.email}
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  退出
+                </Button>
+              </div>
+              
               <DigitalAvatar />
             </div>
           </div>

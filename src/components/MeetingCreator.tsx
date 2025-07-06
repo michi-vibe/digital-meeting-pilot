@@ -25,6 +25,8 @@ import {
   Plus
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const MeetingCreator = () => {
   const [meetingData, setMeetingData] = useState({
@@ -36,9 +38,11 @@ const MeetingCreator = () => {
     expectedDuration: ""
   });
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [generatedAgenda, setGeneratedAgenda] = useState<string[]>([]);
   const [generatedMaterials, setGeneratedMaterials] = useState<string[]>([]);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleGenerateAgenda = async () => {
     if (!meetingData.title || !meetingData.purpose) {
@@ -82,11 +86,67 @@ const MeetingCreator = () => {
     }, 2000);
   };
 
-  const handleSendRequest = () => {
-    toast({
-      title: "会议请求已发送",
-      description: "数字分身正在向参会人员发送会议邀请"
-    });
+  const handleSendRequest = async () => {
+    if (!user) {
+      toast({
+        title: "请先登录",
+        description: "需要登录后才能保存会议信息",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      // 保存会议数据到数据库
+      const { data, error } = await supabase
+        .from('meetings')
+        .insert({
+          user_id: user.id,
+          title: meetingData.title,
+          purpose: meetingData.purpose,
+          meeting_date: meetingData.date || null,
+          meeting_time: meetingData.time || null,
+          expected_duration: meetingData.expectedDuration ? parseInt(meetingData.expectedDuration) : null,
+          participants: meetingData.participants,
+          generated_agenda: generatedAgenda,
+          generated_materials: generatedMaterials,
+          status: 'sent'
+        })
+        .select();
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "会议请求已保存",
+        description: `会议"${meetingData.title}"已成功保存到数据库，并向参会人员发送了邀请`
+      });
+
+      // 重置表单
+      setMeetingData({
+        title: "",
+        purpose: "",
+        date: "",
+        time: "",
+        participants: [],
+        expectedDuration: ""
+      });
+      setGeneratedAgenda([]);
+      setGeneratedMaterials([]);
+
+    } catch (error: any) {
+      console.error('保存会议数据时出错:', error);
+      toast({
+        title: "保存失败",
+        description: error.message || "保存会议数据时发生错误，请重试",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -267,9 +327,23 @@ const MeetingCreator = () => {
 
       {generatedAgenda.length > 0 && (
         <div className="flex justify-center">
-          <Button onClick={handleSendRequest} className="digital-button" size="lg">
-            <Users className="w-5 h-5 mr-2" />
-            确认并发送会议请求
+          <Button 
+            onClick={handleSendRequest} 
+            className="digital-button" 
+            size="lg"
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <Bot className="w-5 h-5 mr-2 animate-spin" />
+                保存中...
+              </>
+            ) : (
+              <>
+                <Users className="w-5 h-5 mr-2" />
+                确认并保存会议请求
+              </>
+            )}
           </Button>
         </div>
       )}
