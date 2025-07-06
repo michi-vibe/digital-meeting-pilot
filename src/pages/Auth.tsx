@@ -49,7 +49,13 @@ const Auth = () => {
     const { error } = await signIn(signInData.email, signInData.password);
     
     if (error) {
-      setError(error.message || "登录失败");
+      if (error.message === "Email not confirmed") {
+        setError("请先确认您的邮箱。请检查邮件并点击确认链接后再登录。");
+      } else if (error.message === "Invalid login credentials") {
+        setError("邮箱或密码错误，请检查后重试。");
+      } else {
+        setError(error.message || "登录失败");
+      }
     }
     
     setLoading(false);
